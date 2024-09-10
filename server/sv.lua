@@ -92,14 +92,14 @@ function onPlayerConnecting(name, setKickReason, deferrals)
 
         local identifier = self.hexid
         if not identifier then
-            kickPlayer(src, 'You must be connected through Steam!', setKickReason, deferrals)
+            kickPlayer(src, 'Steami pole ühendatud!', setKickReason, deferrals)
             CancelEvent()
             return
         end
 
      
         if not checkWhitelist(identifier) then
-            kickPlayer(src, 'You are not whitelisted! Please complete the whitelist process.', setKickReason, deferrals)
+            kickPlayer(src, 'Sa pole whitelisted! Tee whitelist ära palun.', setKickReason, deferrals)
             CancelEvent()
             return
         end
