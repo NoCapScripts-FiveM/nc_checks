@@ -10,20 +10,20 @@ shared_scripts {
 } 
 
 client_scripts {
-    'client/cl.lua',
+   -- 'client/cl.lua',
     'client/init.lua',
-    'client/utils.lua',
     
 }
 
 
 server_scripts {
-    '@redux_errorlog/server/sv_errorlog.lua',
+    '@nc_errorlog/server/sv_errorlog.lua',
     '@oxmysql/lib/MySQL.lua',
     'modules/utility/utils.lua',
     'modules/user/user.lua',
     'modules/database/db.lua',
-    'database/db.lua',
-    'server/sv.lua',
+    'server/functions.lua',
+    'server/qb_sv.lua',
     'server/init.lua',
+    'server/vorp_sv.lua',
 }
