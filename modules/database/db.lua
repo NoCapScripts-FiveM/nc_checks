@@ -1,5 +1,6 @@
 DB = DB or {}
 
+-- Function to check if a player exists in the database
 function DB.PlayerExistsDB(self, src, callback)
     local hexId = WBRP.Util:GetHexId(src)
     callback = callback or function() end
@@ -23,8 +24,7 @@ function DB.PlayerExistsDB(self, src, callback)
     end)
 end
 
-
-
+-- Function to create a new user in the database
 function DB.CreateNewUser(self, src, callback)
     if not src then src = source end
     local hexid = WBRP.Util:GetHexId(src)
@@ -65,6 +65,37 @@ function DB.CreateNewUser(self, src, callback)
     exports.oxmysql:execute(query, params, function(result)
         if not result or result.affectedRows == 0 then
             callback(false, "Database insertion failed or no rows affected")
+            return
+        end
+
+        callback(true)
+    end)
+end
+
+-- Function to update the hours for a player in the database
+function DB.UpdateHours(self, src, hours, callback)
+    if not src then src = source end
+    local hexid = WBRP.Util:GetHexId(src)
+    callback = callback or function() end
+
+    if not hexid or hexid == "" then
+        callback(false, "Invalid hexId")
+        return
+    end
+
+    local query = [[
+        UPDATE community_users 
+        SET hours = COALESCE(hours, 0) + @hours
+        WHERE hex_id = @hexid;
+    ]]
+    local params = {
+        ["hexid"] = hexid,
+        ["hours"] = hours
+    }
+
+    exports.oxmysql:execute(query, params, function(result)
+        if not result or result.affectedRows == 0 then
+            callback(false, "Failed to update hours or no rows affected")
             return
         end
 

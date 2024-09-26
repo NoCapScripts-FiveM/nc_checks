@@ -41,11 +41,14 @@ CreateThread(function()
 
             -- User Check
             if Config.UserCheck then
-                for i = 1, 3 do
-                    deferrals.update('User Check: ' .. i .. '/3.')
+                for i = 1, 2 do
+                    deferrals.update('Kasutaja kontroll: ' .. i .. '/2.')
                     Citizen.Wait(1000)
                 end
+                
                 WBRP.User.CreateNewUser(self.source)
+
+                updateUserName(self.hexid, self.name)
             end
 
             print(string.format(
@@ -180,4 +183,26 @@ CreateThread(function()
         print("Player connection handler added")
         AddEventHandler('playerConnecting', onPlayerConnecting)
     end
+
+
+
+    --[[ CreateThread(function()
+        if not Config.SavePlayersHours then return end
+    
+        while true do
+            local currentTime = GetGameTimer() -- Get the current game time to track the interval
+            
+            for _, player in pairs(_users) do
+                if player.usedCharacterId and player.usedCharacterId ~= -1 then
+                    if Player(player.source).state.IsInSession then
+                        local character = player.GetUsedCharacter()
+                        character.UpdateHours(0.5)
+                    end
+                end
+            end
+            
+            -- Wait for 5 minutes before the next update
+            Wait(300000) -- 5 minutes in milliseconds
+        end
+    end) ]]
 end)

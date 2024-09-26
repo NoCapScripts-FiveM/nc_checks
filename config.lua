@@ -12,7 +12,7 @@ Config.QBCore = true
 -- Checks
 Config.UserCheck = true
 Config.SavePlayersHours = true
-Config.Whitelist = true
+Config.Whitelist = false
 Config.NameCheck = true
 Config.Discord = false
 Config.Identifier = true
