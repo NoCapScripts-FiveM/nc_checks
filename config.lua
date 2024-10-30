@@ -1,13 +1,16 @@
 Config = Config or {}
 
+Config.Logs = true -- Default: false
+
 -- Core Settings
 Config.IdentifierType = 'steam'
 Config.ESXCoreName = 'es_extended'
-Config.QBCoreName = 'nc_fw'
+Config.QBCoreName = 'nc_fw' -- Default: qb-core or else
+Config.VORPCoreName = "vorp_core"
 
 -- Feature Toggles
 Config.RedM = false
-Config.QBCore = true
+Config.Fivem = true
 
 -- Checks
 Config.UserCheck = true

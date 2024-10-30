@@ -3,6 +3,7 @@
 -- ==============================
 Framework = ''
 QBCore = nil
+
 ESX = nil
 
 CreateThread(function()
@@ -12,9 +13,9 @@ CreateThread(function()
     -- Check for QBCore Framework
     if GetResourceState(Config.QBCoreName) == 'starting' or GetResourceState(Config.QBCoreName) == 'started' then 
         Framework = 'QBCORE'
-        QBCore = exports[Config.QBCoreName]:GetCoreObject()
         print("QBCore Framework initialized: ", Framework)
     end
+
 end)
 
 -- Player Connection Handler
@@ -22,6 +23,8 @@ CreateThread(function()
     Wait(10)
     if Framework == 'QBCORE' then 
         print("Framework: " .. Framework)
+
+        QBCore = exports[Config.QBCoreName]:GetCoreObject()
 
         function onPlayerConnecting(name, setKickReason, deferrals)
             deferrals.defer()
@@ -35,8 +38,8 @@ CreateThread(function()
             local self = {
                 source = src,
                 name = GetPlayerName(src),
-                hexid = WBRP.Util:GetHexId(src),
-                license = WBRP.Util:GetLicense(src)
+                hexid = Checks.Util:GetHexId(src),
+                license = Checks.Util:GetLicense(src)
             }
 
             -- User Check
@@ -46,7 +49,7 @@ CreateThread(function()
                     Citizen.Wait(1000)
                 end
                 
-                WBRP.User.CreateNewUser(self.source)
+                Checks.User.CreateNewUser(self.source)
 
                 updateUserName(self.hexid, self.name)
             end

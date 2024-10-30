@@ -1,9 +1,23 @@
+Framework = ''
+VORP = nil
+
+CreateThread(function()
+    Wait(10)
+
+
+    if GetResourceState(Config.VORPCoreName) == 'starting' or GetResourceState(Config.VORPCoreName) == 'started' then 
+        Framework = 'VORP'
+        print("VORP Framework initialized: ", Framework)
+    end
+end)
 
 
 -- ==============================
 -- Player Connecting Logic for RedM
 -- ==============================
-if Framework == "VORP" then 
+if Framework == 'VORP' then 
+    VORP = exports.vorp_core:GetCore()
+
     print("NC CHECKS")
     function onPlayerConnecting(name, setKickReason, deferrals)
         deferrals.defer()
@@ -17,8 +31,8 @@ if Framework == "VORP" then
         local self = {
             source = src,
             name = GetPlayerName(src),
-            hexid = WBRP.Util:GetHexId(src),
-            license = WBRP.Util:GetLicense(src)
+            hexid = Checks.Util:GetHexId(src),
+            license = Checks.Util:GetLicense(src)
         }
 
         print(string.format(
@@ -37,10 +51,12 @@ if Framework == "VORP" then
                 deferrals.update('Kontrollime teie andmeid: '.. self.name)
                 Citizen.Wait(1000)
             end
-            WBRP.User.CreateNewUser(self.source)
+            Checks.User.CreateNewUser(self.source)
         end
 
-        exports.nc_logs:AddLog("JOIN", self.hexid, "Player joined the server", nil)
+        if Config.Logs then
+            exports.nc_logs:AddLog("JOIN", self.hexid, "Player joined the server", nil)
+        end
         deferrals.done()
     end
 

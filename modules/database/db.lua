@@ -2,7 +2,7 @@ DB = DB or {}
 
 -- Function to check if a player exists in the database
 function DB.PlayerExistsDB(self, src, callback)
-    local hexId = WBRP.Util:GetHexId(src)
+    local hexId = Checks.Util:GetHexId(src)
     callback = callback or function() end
 
     if not hexId or hexId == "" then
@@ -27,14 +27,14 @@ end
 -- Function to create a new user in the database
 function DB.CreateNewUser(self, src, callback)
     if not src then src = source end
-    local hexid = WBRP.Util:GetHexId(src)
+    local hexid = Checks.Util:GetHexId(src)
     callback = callback or function() end
 
     local data = {
         hexid = hexid,
-        communityid = WBRP.Util:HexIdToComId(hexid),
-        steamid = WBRP.Util:HexIdToSteamId(hexid),
-        license = WBRP.Util:GetLicense(src),
+        communityid = Checks.Util:HexIdToComId(hexid),
+        steamid = Checks.Util:HexIdToSteamId(hexid),
+        license = Checks.Util:GetLicense(src),
         name = GetPlayerName(src),
         ip = GetPlayerEndpoint(src),
         rank = "user"
@@ -75,7 +75,7 @@ end
 -- Function to update the hours for a player in the database
 function DB.UpdateHours(self, src, hours, callback)
     if not src then src = source end
-    local hexid = WBRP.Util:GetHexId(src)
+    local hexid = Checks.Util:GetHexId(src)
     callback = callback or function() end
 
     if not hexid or hexid == "" then

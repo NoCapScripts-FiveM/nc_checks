@@ -1,14 +1,14 @@
 WBRP = {}
 
-WBRP.Config = QBConfig
-WBRP.Shared = QBShared
-WBRP.ClientCallbacks = {}
-WBRP.ServerCallbacks = {}
+Checks.Config = QBConfig
+Checks.Shared = QBShared
+Checks.ClientCallbacks = {}
+Checks.ServerCallbacks = {}
 
 
-WBRP.Util = WBRP.Util
-WBRP.DB = WBRP.DB
-WBRP.User = WBRP.User
+Checks.Util = Checks.Util
+Checks.DB = Checks.DB
+Checks.User = Checks.User
 
 exports('Core', function()
     return WBRP

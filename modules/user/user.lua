@@ -6,7 +6,7 @@ function User.CreateNewUser(src)
     Citizen.Wait(1)
 
  
-    WBRP.DB:PlayerExistsDB(src, function(exists, err)
+    Checks.DB:PlayerExistsDB(src, function(exists, err)
         if err then
             print("[ERROR] Failed to check if player exists: " .. err)
             return
@@ -14,7 +14,7 @@ function User.CreateNewUser(src)
 
        
         if not exists then
-            WBRP.DB:CreateNewUser(src, function(created, err)
+            Checks.DB:CreateNewUser(src, function(created, err)
                 if err then
                     print("[ERROR] Failed to create new user: " .. err)
                     return

@@ -1,20 +1,20 @@
-WBRP = {}
+Checks = {}
 
-WBRP.Config = QBConfig
-WBRP.Shared = QBShared
-WBRP.ClientCallbacks = {}
-WBRP.ServerCallbacks = {}
+Checks.Config = QBConfig
+Checks.Shared = QBShared
+Checks.ClientCallbacks = {}
+Checks.ServerCallbacks = {}
 
 
-WBRP.Util = Util
-WBRP.DB = DB
-WBRP.User = User
+Checks.Util = Util
+Checks.DB = DB
+Checks.User = User
 
 
 
 
 exports('Core', function()
-    return WBRP
+    return Checks
 end)
 
 
