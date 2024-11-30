@@ -26,20 +26,28 @@ function User.CreateNewUser(src)
             Checks.DB:CreateNewUser(src, function(created, err)
                 if err then
                     print("[ERROR] Failed to create new user: " .. err)
-                    exports.nc_logs:AddLog("Kasutaja loomine", self.name, self.license, "Viga uue kasutaja loomisel!", err)
+                    if Config.Logs then
+                        exports.nc_logs:AddLog("Kasutaja loomine", self.name, self.license, "Viga uue kasutaja loomisel!", err)
+                    end
                     return
                 end
 
                 if created then
-                    exports.nc_logs:AddLog("Kasutaja loomine", self.name, self.license, "Kasutaja andmed on edastatud ja loodud!", nil)
+                    if Config.Logs then
+                        exports.nc_logs:AddLog("Kasutaja loomine", self.name, self.license, "Kasutaja andmed on edastatud ja loodud!", nil)
+                    end
                     print("[INFO] User created successfully for source: " .. tostring(src))
                 else
-                    exports.nc_logs:AddLog("Kasutaja loomine", self.name, self.license, "Viga uue kasutaja loomisel!", src)
+                    if Config.Logs then
+                        exports.nc_logs:AddLog("Kasutaja loomine", self.name, self.license, "Viga uue kasutaja loomisel!", src)
+                    end
                     print("[ERROR] Failed to create user for source: " .. tostring(src))
                 end
             end)
         else
-            exports.nc_logs:AddLog("Kasutaja loomine", self.name, self.license, "Kasutaja on juba olemas!", src)
+            if Config.Logs then
+                exports.nc_logs:AddLog("Kasutaja loomine", self.name, self.license, "Kasutaja on juba olemas!", src)
+            end
             print("[INFO] User already exists for source: " .. tostring(src))
         end
     end)

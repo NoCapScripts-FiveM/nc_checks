@@ -181,7 +181,10 @@ CreateThread(function()
 
             -- Logging Player Join
             local user = QBCore.Functions.GetIdentifier(src, 'steam')
-            exports.nc_logs:AddLog("JOIN", user, "Player joined server", nil)
+            
+            if Config.Logs then
+                exports.nc_logs:AddLog("JOIN", user, "Player joined server", nil)
+            end
         end
 
         print("Player connection handler added")
