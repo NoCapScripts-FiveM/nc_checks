@@ -6,7 +6,8 @@ lua54 'yes'
 
 shared_scripts {
     'config.lua',
-    '@ncfw/imports.lua'
+    '@ncfw/imports.lua',
+    '@es_extended/imports.lua'
     
 } 
 
