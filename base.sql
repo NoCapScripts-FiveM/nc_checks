@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `community_users` (
   `steam_id` varchar(50) DEFAULT NULL,
   `community_id` varchar(100) DEFAULT NULL,
   `license` varchar(255) DEFAULT NULL,
+  `discord` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL DEFAULT 'Uknown',
   `ip` varchar(50) NOT NULL DEFAULT 'Uknown',
   `rank` varchar(50) NOT NULL DEFAULT 'user',
