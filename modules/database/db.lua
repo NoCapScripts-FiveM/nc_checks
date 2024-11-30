@@ -34,7 +34,8 @@ function DB.CreateNewUser(self, src, callback)
         hexid = hexid,
         communityid = Checks.Util:HexIdToComId(hexid),
         steamid = Checks.Util:HexIdToSteamId(hexid),
-        license = Checks.Util:GetLicense(src),
+        license = Checks.Util:GetLicense(src, "license"),
+        discord = Checks.Util:GetLicense(src, "discord"),
         name = GetPlayerName(src),
         ip = GetPlayerEndpoint(src),
         rank = "user"
@@ -49,14 +50,15 @@ function DB.CreateNewUser(self, src, callback)
     end
 
     local query = [[
-        INSERT INTO community_users (hex_id, steam_id, community_id, license, ip, name, rank)
-        VALUES (@hexid, @steamid, @comid, @license, @ip, @name, @rank);
+        INSERT INTO community_users (hex_id, steam_id, community_id, license, discord, ip, name, rank)
+        VALUES (@hexid, @steamid, @comid, @license, @discord, @ip, @name, @rank);
     ]]
     local params = {
         ["hexid"] = data.hexid,
         ["steamid"] = data.steamid,
         ["comid"] = data.communityid,
         ["license"] = data.license,
+        ["discord"] = data.discord,
         ["ip"] = data.ip,
         ["name"] = data.name,
         ["rank"] = data.rank

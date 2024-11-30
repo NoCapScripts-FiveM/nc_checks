@@ -42,7 +42,7 @@ end
 
 
 
-function Util.GetLicense(self, src)
+function Util.GetLicense(self, src, type)
     local sid = tonumber(src)
     local licenses = {}
 
@@ -50,7 +50,7 @@ function Util.GetLicense(self, src)
 
     
     for k,v in ipairs(licenses) do
-        if string.sub(v, 1, 7) == "license" or "steam" then
+        if string.sub(v, 1, 7) == type then
             return v
         end
        

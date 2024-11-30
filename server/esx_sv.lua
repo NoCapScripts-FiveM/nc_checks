@@ -115,12 +115,14 @@ CreateThread(function()
 
                 local identifier = self.hexid
                 if not identifier then
+                    exports.nc_logs:AddLog("Whitelisti kontroll", self.name, self.license, "Kasutaja pole steami kasutajaga!", nil)
                     kickPlayer(src, 'Steami kasutaja pole ühenduses!', setKickReason, deferrals)
                     CancelEvent()
                     return
                 end
 
                 if not checkWhitelist(identifier) then
+                    exports.nc_logs:AddLog("Whitelisti kontroll", self.name, self.license, "Kasutaja pole whitelisti taotlus tehtud!", nil)
                     kickPlayer(src, 'Sinul pole whitelist tehtud! Palun tee ära meie whitelisti taotlus, et mängida.', setKickReason, deferrals)
                     CancelEvent()
                     return
@@ -136,19 +138,22 @@ CreateThread(function()
 
                 local PlayerName = self.name
                 if not PlayerName or PlayerName == "" then 
+                    exports.nc_logs:AddLog("Nime kontroll", self.name, self.license, "Tühi nimi pole lubatud!", nil)
                     kickUser(src, '❌ Tühi nimi pole lubatud.', setKickReason, deferrals)
                     CancelEvent()
                     return
                 end
 
                 if string.match(PlayerName, "[*%%'=`\"]") then
+                    exports.nc_logs:AddLog("Nime kontroll", self.name, self.license, "Vigadega tähed!", nil)
                     kickUser(src, '❌ Vigadega tähed: ' .. string.match(PlayerName, "[*%%'=`\"]"), setKickReason, deferrals)
                     CancelEvent()
                     return
                 end
 
                 if string.match(PlayerName, "drop") or string.match(PlayerName, "table") or string.match(PlayerName, "database") then
-                    kickUser(src, '❌ Keelatud sõnad!', setKickReason, deferrals)
+                    exports.nc_logs:AddLog("Nime kontroll", self.name, self.license, "Keelatud nimi!", nil)
+                    kickUser(src, '❌ Keelatud nimi!', setKickReason, deferrals)
                     CancelEvent()
                     return
                 end
@@ -165,6 +170,7 @@ CreateThread(function()
 
                 local Discord = NC.GetIdentifier(src, "discord")
                 if not Discord or Discord:sub(1, 8) ~= "discord:" then
+                    exports.nc_logs:AddLog("Discordi kontroll", self.name, self.license, "Ei leitud DISCORDI litsentsi!", nil)
                     kickUser(src, '❌ Sinul peab olema discordi kasutaja!', setKickReason, deferrals)
                     CancelEvent()
                     return
@@ -180,12 +186,14 @@ CreateThread(function()
 
                 if Config.IdentifierType == "steam" then
                     if not self.hexid or self.hexid:sub(1, 6) ~= "steam:" then
+                        exports.nc_logs:AddLog("Litsentsi kontroll", self.name, self.license, "Ei leitud STEAMI litsentsi!", nil)
                         kickUser(src, '❌ Sinul peab olema steami kasutaja. NB! Server lubab ainult steami kasutajaid.', setKickReason, deferrals)
                         CancelEvent()
                         return
                     end
                 elseif Config.IdentifierType == "license" then
                     if not self.license or self.license:sub(1, 8) ~= "license:" then
+                        exports.nc_logs:AddLog("Litsentsi kontroll", self.name, self.license, "Ei leitud ROCKSTARI litsentsi!", nil)
                         kickUser(src, '❌  Sinul peab olema Rockstari kasutaja. NB! Server lubab ainult Rockstari kasutajaid.', setKickReason, deferrals)
                         CancelEvent()
                         return
@@ -203,12 +211,15 @@ CreateThread(function()
                 local success, isBanned, reason = pcall(ESX.IsPlayerBanned, src)
                 if not success then
                     kickUser(src, 'Error fetching ban data.', setKickReason, deferrals)
+                    exports.nc_logs:AddLog("Keelustuse kontroll", self.name, self.license, "Viga andmete saamisel", nil)
                     CancelEvent()
                     return
                 end
 
                 if isBanned then
+                    exports.nc_logs:AddLog("Keelustuse kontroll", self.name, self.license, "See isik on meie serverist keelustatud!", nil)
                     kickUser(src, reason, setKickReason, deferrals)
+                    
                     CancelEvent()
                     return
                 end
@@ -222,8 +233,8 @@ CreateThread(function()
           --  TriggerClientEvent('NCS:Client:SharedUpdate', src, QBCore.Shared)
 
             -- Logging Player Join
-            local user = NC.GetIdentifier(src, "steam") or  NC.GetIdentifier(src, "discord")
-            exports.nc_logs:AddLog("JOIN", user, "Player joined server", nil)
+         
+            exports.nc_logs:AddLog("LIITUMINE", self.name, self.license, "Player joined server", nil)
         end
 
         print("Player connection handler added")
