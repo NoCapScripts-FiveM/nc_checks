@@ -2,30 +2,70 @@
 -- Initialization
 -- ==============================
 Framework = ''
-QBCore = nil
 
+ESX = nil
 
 CreateThread(function()
     Wait(10)
 
 
     -- Check for QBCore Framework
-    if GetResourceState(Config.QBCoreName) == 'starting' or GetResourceState(Config.QBCoreName) == 'started' then 
-        Framework = 'QBCore'
-        print("QBCore Framework initialized: ", Framework)
+    if GetResourceState(Config.ESXCoreName) == 'starting' or GetResourceState(Config.ESXCoreName) == 'started' then 
+        Framework = 'ESX'
+        print("ESX Framework initialized: ", Framework)
     end
+
+    
 
 end)
 
 -- Player Connection Handler
 CreateThread(function()
     Wait(10)
-    if Framework == 'QBCore' then 
+    if Framework == 'ESX' then 
         print("Framework: " .. Framework)
 
-      
+        ESX = exports[Config.ESXCoreName]:getSharedObject()
 
-        QBCore = exports[Config.QBCoreName]:GetCoreObject()
+
+        function kickUser(source, Reason, setKickReason, deferrals)
+            local src = source
+            local formattedReason = "\n" .. Reason
+        
+            -- Set the kick reason using deferrals if provided
+            if setKickReason then
+                setKickReason(formattedReason)
+            end
+        
+            Citizen.CreateThread(function()
+                if deferrals then
+                    deferrals.update(formattedReason)
+                    Citizen.Wait(2500)  -- Allow the message to be shown before kicking
+                end
+        
+                -- Drop the player immediately
+                if src then
+                    DropPlayer(src, formattedReason)
+                end
+        
+                -- Ensure the player is dropped by checking their ping
+                for i = 1, 4 do
+                    Citizen.Wait(5000)  -- Wait 5 seconds before retrying
+        
+                    -- Check if the player is still connected
+                    if src and GetPlayerPing(src) >= 0 then
+                        Citizen.Wait(100)
+                        DropPlayer(src, formattedReason)
+                    else
+                        -- If the player is already dropped, exit the loop
+                        break
+                    end
+                end
+            end)
+        end
+
+
+
 
         function onPlayerConnecting(name, setKickReason, deferrals)
             deferrals.defer()
@@ -39,8 +79,8 @@ CreateThread(function()
             local self = {
                 source = src,
                 name = GetPlayerName(src),
-                hexid = Checks.Util:GetHexId(src),
-                license = Checks.Util:GetLicense(src)
+                hexid = ESX.GetIdentifier(src, "steam"),
+                license = ESX.GetIdentifier(src, "license"),
             }
 
             -- User Check
@@ -81,7 +121,7 @@ CreateThread(function()
                 end
 
                 if not checkWhitelist(identifier) then
-                    kickPlayer(src, 'Sinul pole whitelist tehtud! Palun tee ära, et mängida.', setKickReason, deferrals)
+                    kickPlayer(src, 'Sinul pole whitelist tehtud! Palun tee ära meie whitelisti taotlus, et mängida.', setKickReason, deferrals)
                     CancelEvent()
                     return
                 end
@@ -96,19 +136,19 @@ CreateThread(function()
 
                 local PlayerName = self.name
                 if not PlayerName or PlayerName == "" then 
-                    QBCore.Functions.Kick(src, '❌ Tühi nimi pole lubatud.', setKickReason, deferrals)
+                    kickUser(src, '❌ Tühi nimi pole lubatud.', setKickReason, deferrals)
                     CancelEvent()
                     return
                 end
 
                 if string.match(PlayerName, "[*%%'=`\"]") then
-                    QBCore.Functions.Kick(src, '❌ Vigadega tähed: ' .. string.match(PlayerName, "[*%%'=`\"]"), setKickReason, deferrals)
+                    kickUser(src, '❌ Vigadega tähed: ' .. string.match(PlayerName, "[*%%'=`\"]"), setKickReason, deferrals)
                     CancelEvent()
                     return
                 end
 
                 if string.match(PlayerName, "drop") or string.match(PlayerName, "table") or string.match(PlayerName, "database") then
-                    QBCore.Functions.Kick(src, '❌ Keelatud sõnad!', setKickReason, deferrals)
+                    kickUser(src, '❌ Keelatud sõnad!', setKickReason, deferrals)
                     CancelEvent()
                     return
                 end
@@ -121,9 +161,11 @@ CreateThread(function()
                 deferrals.update("💻 Discordi kontroll...")
                 Wait(1000)
 
-                local Discord = QBCore.Functions.GetIdentifier(src, "discord")
+
+
+                local Discord = NC.GetIdentifier(src, "discord")
                 if not Discord or Discord:sub(1, 8) ~= "discord:" then
-                    QBCore.Functions.Kick(src, '❌ Sinul peab olema discordi kasutaja!', setKickReason, deferrals)
+                    kickUser(src, '❌ Sinul peab olema discordi kasutaja!', setKickReason, deferrals)
                     CancelEvent()
                     return
                 end
@@ -138,13 +180,13 @@ CreateThread(function()
 
                 if Config.IdentifierType == "steam" then
                     if not self.hexid or self.hexid:sub(1, 6) ~= "steam:" then
-                        QBCore.Functions.Kick(src, '❌ Sinul peab olema steami kasutaja. NB! Server lubab ainult steami kasutajaid.', setKickReason, deferrals)
+                        kickUser(src, '❌ Sinul peab olema steami kasutaja. NB! Server lubab ainult steami kasutajaid.', setKickReason, deferrals)
                         CancelEvent()
                         return
                     end
                 elseif Config.IdentifierType == "license" then
                     if not self.license or self.license:sub(1, 8) ~= "license:" then
-                        QBCore.Functions.Kick(src, '❌  Sinul peab olema Rockstari kasutaja. NB! Server lubab ainult Rockstari kasutajaid.', setKickReason, deferrals)
+                        kickUser(src, '❌  Sinul peab olema Rockstari kasutaja. NB! Server lubab ainult Rockstari kasutajaid.', setKickReason, deferrals)
                         CancelEvent()
                         return
                     end
@@ -158,15 +200,15 @@ CreateThread(function()
                 deferrals.update("🔒 Keelustuse kontroll...")
                 Wait(1000)
 
-                local success, isBanned, reason = pcall(QBCore.Functions.IsPlayerBanned, src)
+                local success, isBanned, reason = pcall(ESX.IsPlayerBanned, src)
                 if not success then
-                    QBCore.Functions.Kick(src, 'Error fetching ban data.', setKickReason, deferrals)
+                    kickUser(src, 'Error fetching ban data.', setKickReason, deferrals)
                     CancelEvent()
                     return
                 end
 
                 if isBanned then
-                    QBCore.Functions.Kick(src, reason, setKickReason, deferrals)
+                    kickUser(src, reason, setKickReason, deferrals)
                     CancelEvent()
                     return
                 end
@@ -177,10 +219,10 @@ CreateThread(function()
 
             -- Triggering Client Events
             TriggerClientEvent('onPlayerJoining', src)
-            TriggerClientEvent('NCS:Client:SharedUpdate', src, QBCore.Shared)
+          --  TriggerClientEvent('NCS:Client:SharedUpdate', src, QBCore.Shared)
 
             -- Logging Player Join
-            local user = QBCore.Functions.GetIdentifier(src, 'steam')
+            local user = NC.GetIdentifier(src, "steam") or  NC.GetIdentifier(src, "discord")
             exports.nc_logs:AddLog("JOIN", user, "Player joined server", nil)
         end
 
@@ -190,23 +232,4 @@ CreateThread(function()
 
 
 
-    --[[ CreateThread(function()
-        if not Config.SavePlayersHours then return end
-    
-        while true do
-            local currentTime = GetGameTimer() -- Get the current game time to track the interval
-            
-            for _, player in pairs(_users) do
-                if player.usedCharacterId and player.usedCharacterId ~= -1 then
-                    if Player(player.source).state.IsInSession then
-                        local character = player.GetUsedCharacter()
-                        character.UpdateHours(0.5)
-                    end
-                end
-            end
-            
-            -- Wait for 5 minutes before the next update
-            Wait(300000) -- 5 minutes in milliseconds
-        end
-    end) ]]
 end)

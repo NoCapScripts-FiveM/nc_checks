@@ -4,7 +4,7 @@ Config.Logs = true -- Default: false
 
 -- Core Settings
 Config.IdentifierType = 'steam'
-Config.ESXCoreName = 'es_extended'
+Config.ESXCoreName = 'ncfw'
 Config.QBCoreName = 'nc_fw' -- Default: qb-core or else
 Config.VORPCoreName = "vorp_core"
 

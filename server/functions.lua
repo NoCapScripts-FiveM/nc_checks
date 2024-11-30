@@ -4,7 +4,7 @@
 -- ==============================
 function checkWhitelist(identifier)
     print("Whitelist check for:", identifier)
-    local rowCount = MySQL.scalar.await('SELECT COUNT(1) FROM whitelisted WHERE steam = ?', { identifier })
+    local rowCount = MySQL.scalar.await('SELECT COUNT(1) FROM whitelisted WHERE identifier = ?', { identifier })
     return rowCount and rowCount > 0
 end
 -- ==============================

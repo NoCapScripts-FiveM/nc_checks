@@ -1,4 +1,4 @@
-WBRP = {}
+Checks = {}
 
 Checks.Config = QBConfig
 Checks.Shared = QBShared
@@ -11,5 +11,5 @@ Checks.DB = Checks.DB
 Checks.User = Checks.User
 
 exports('Core', function()
-    return WBRP
+    return Checks
 end)

@@ -6,6 +6,7 @@ lua54 'yes'
 
 shared_scripts {
     'config.lua',
+    '@ncfw/imports.lua'
     
 } 
 
@@ -17,7 +18,7 @@ client_scripts {
 
 
 server_scripts {
-    '@nc_errorlog/server/sv_errorlog.lua',
+
     '@oxmysql/lib/MySQL.lua',
     'modules/utility/utils.lua',
     'modules/user/user.lua',
@@ -26,4 +27,5 @@ server_scripts {
     'server/qb_sv.lua',
     'server/init.lua',
     'server/vorp_sv.lua',
+    'server/esx_sv.lua',
 }
