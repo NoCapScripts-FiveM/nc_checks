@@ -116,7 +116,7 @@ CreateThread(function()
                 local identifier = self.hexid
                 if not identifier then
                     if Config.Logs then
-                        exports.nc_logs:AddLog("Whitelisti kontroll", self.name, self.license, "Kasutaja pole steami kasutajaga!", nil)
+                        exports.nc_logs:AddLog("Steami kontroll", self.name, self.license, "Kasutaja pole steami kasutajaga!", nil)
                     end
                     kickPlayer(src, 'Steami kasutaja pole ühenduses!', setKickReason, deferrals)
                     CancelEvent()
@@ -127,7 +127,7 @@ CreateThread(function()
                     if Config.Logs then
                         exports.nc_logs:AddLog("Whitelisti kontroll", self.name, self.license, "Kasutaja pole whitelisti taotlus tehtud!", nil)
                     end
-                    kickPlayer(src, 'Sinul pole whitelist tehtud! Palun tee ära meie whitelisti taotlus, et mängida.', setKickReason, deferrals)
+                    kickPlayer(src, 'Sinul pole whitelist tehtud! Palun tee ära meie whitelisti taotlus, et mängida. UCP:'..Config.UCPWebsite, setKickReason, deferrals)
                     CancelEvent()
                     return
                 end

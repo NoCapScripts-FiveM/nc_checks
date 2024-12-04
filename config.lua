@@ -15,8 +15,14 @@ Config.Fivem = true
 -- Checks
 Config.UserCheck = true --[User account creation and data check]
 Config.SavePlayersHours = true --[User playhours ] IDK why is this here
-Config.Whitelist = false --[User whitelist check ]
+Config.Whitelist = true --[User whitelist check ]
 Config.NameCheck = true --[User name check ]
 Config.Discord = false --[User discord check ]
 Config.Identifier = true --[User license check ]
 Config.Ban = true --[User ban check ]
+
+
+-- Whitelist strings
+
+
+Config.UCPWebsite = "ucp.com" -- Your FivemServer UCP
