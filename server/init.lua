@@ -9,7 +9,7 @@ Checks.ServerCallbacks = {}
 Checks.Util = Util
 Checks.DB = DB
 Checks.User = User
-
+Checks.Core = exports[Config.ESXCoreName]:getSharedObject()
 
 
 

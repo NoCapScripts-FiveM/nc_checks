@@ -14,5 +14,9 @@ Is an customizeable player FiveM data checker resource for Fivem that controls j
 * qb-core
 * vorp-core *REDM*
 
+# UPDATES
+
+* Added EN and EE language for ESX. Other frameworks TODO!
+
 
 

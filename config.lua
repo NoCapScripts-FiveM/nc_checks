@@ -1,5 +1,7 @@
 Config = Config or {}
 
+Config.Lang = "EE" -- Default: EN [Language option]
+
 Config.Logs = true -- Default: false [Enables logs feature with depedency resource]
 
 -- Core Settings
