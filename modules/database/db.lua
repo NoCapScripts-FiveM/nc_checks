@@ -10,17 +10,15 @@ function DB.PlayerExistsDB(self, src, callback)
         return
     end
 
-    local query = [[SELECT hex_id FROM community_users WHERE hex_id = @id LIMIT 1;]]
-    local params = {["id"] = hexId}
-
-    exports.oxmysql:execute(query, params, function(results)
-        if not results then
-            callback(false, "Database query failed")
-            return
+    Mongo:FindOne({
+        collection = "community_users",
+        query = { hex_id = hexId }
+    }, function(result)
+        if result then
+            callback(true)  -- Player found
+        else
+            callback(false) -- Player not found
         end
-
-        local exists = #results > 0
-        callback(exists)
     end)
 end
 
@@ -31,14 +29,15 @@ function DB.CreateNewUser(self, src, callback)
     callback = callback or function() end
 
     local data = {
-        hexid = hexid,
-        communityid = Checks.Util:HexIdToComId(hexid),
-        steamid = Checks.Util:HexIdToSteamId(hexid),
+        hex_id = hexid,
+        community_id = Checks.Util:HexIdToComId(hexid),
+        steam_id = Checks.Util:HexIdToSteamId(hexid),
         license = Checks.Util:GetLicense(src, "license"),
         discord = Checks.Util:GetLicense(src, "discord"),
         name = GetPlayerName(src),
         ip = GetPlayerEndpoint(src),
-        rank = "user"
+        rank = "user",
+        hours = 0
     }
 
     -- Validate data fields
@@ -49,28 +48,15 @@ function DB.CreateNewUser(self, src, callback)
         end
     end
 
-    local query = [[
-        INSERT INTO community_users (hex_id, steam_id, community_id, license, discord, ip, name, rank)
-        VALUES (@hexid, @steamid, @comid, @license, @discord, @ip, @name, @rank);
-    ]]
-    local params = {
-        ["hexid"] = data.hexid,
-        ["steamid"] = data.steamid,
-        ["comid"] = data.communityid,
-        ["license"] = data.license,
-        ["discord"] = data.discord,
-        ["ip"] = data.ip,
-        ["name"] = data.name,
-        ["rank"] = data.rank
-    }
-
-    exports.oxmysql:execute(query, params, function(result)
-        if not result or result.affectedRows == 0 then
-            callback(false, "Database insertion failed or no rows affected")
-            return
+    Mongo:InsertOne({
+        collection = "community_users",
+        document = data
+    }, function(result)
+        if result then
+            callback(true)
+        else
+            callback(false, "Database insertion failed")
         end
-
-        callback(true)
     end)
 end
 
@@ -85,22 +71,15 @@ function DB.UpdateHours(self, src, hours, callback)
         return
     end
 
-    local query = [[
-        UPDATE community_users 
-        SET hours = COALESCE(hours, 0) + @hours
-        WHERE hex_id = @hexid;
-    ]]
-    local params = {
-        ["hexid"] = hexid,
-        ["hours"] = hours
-    }
-
-    exports.oxmysql:execute(query, params, function(result)
-        if not result or result.affectedRows == 0 then
-            callback(false, "Failed to update hours or no rows affected")
-            return
+    Mongo:UpdateOne({
+        collection = "community_users",
+        query = { hex_id = hexid },
+        update = { ["$inc"] = { hours = hours } }
+    }, function(result)
+        if result and result.modifiedCount and result.modifiedCount > 0 then
+            callback(true)
+        else
+            callback(false, "Failed to update hours")
         end
-
-        callback(true)
     end)
 end

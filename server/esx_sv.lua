@@ -86,6 +86,26 @@ CreateThread(function()
             if Config.UserCheck then
                 UserCheck(deferrals, source)
             end
+            Wait(1000)
+
+           if Config.Development then
+                local identifier = self.hexid -- You need to define this to get the player's Steam hex
+                IsDeveloper(deferrals, identifier, function(isDev)
+                    if isDev then
+                        print("Player is developer, allowing connection:", identifier, self.name)
+                        -- continue connection or whatever you want here
+                    else
+                        print("Player is NOT developer:", identifier, self.name)
+                        -- maybe reject or defer connection here using deferrals
+                        if Locale == "EE" then
+                            deferrals.done("Te ei ole arendaja.")
+                        elseif Locale == "EN" then
+                            deferrals.done("You are not a developer.")
+                        end
+                    end
+                end)
+            end
+
 
             -- EE locale
             if Locale == "EE" then
@@ -118,7 +138,7 @@ CreateThread(function()
 
             -- Whitelist Check
             if Config.Whitelist then
-                WhitelistControl(setKickReason, deferrals)
+                WhitelistControl(setKickReason, deferrals, self.source)
             end
 
             Wait(1000)
@@ -126,7 +146,7 @@ CreateThread(function()
             -- Name Check
            
             if Config.NameCheck then
-                NameCheck(setKickReason, def)
+                NameCheck(setKickReason, deferrals, self.source)
             end
           
            
@@ -142,14 +162,14 @@ CreateThread(function()
 
             -- Identifier Check
             if Config.Identifier then
-                IdentifierCheck(name, setKickReason, deferrals)
+                IdentifierCheck(name, setKickReason, deferrals, self.source)
             end
 
             Wait(1000)
 
             -- Ban Check
             if Config.Ban then
-                BanCheck(name, setKickReason, deferrals)
+                BanCheck(name, setKickReason, deferrals, self.source)
             end
 
             -- Finalizing Connection
@@ -172,3 +192,38 @@ CreateThread(function()
 
 
 end)
+
+
+RegisterCommand('addwhitelist', function(source, args, rawCommand)
+    if not args[1] then
+        print("Usage: /addwhitelist <license>")
+        return
+    end
+
+    local license = args[1]
+    addUserToWhitelist(license, function(success)
+        if success then
+            print("Whitelist add succeeded")
+        else
+            print("Whitelist add failed")
+        end
+    end)
+
+end, false)
+
+RegisterCommand('adddev', function(source, args, rawCommand)
+    if not args[1] then
+        print("Usage: /adddev <license>")
+        return
+    end
+
+    local license = args[1]
+    addUserToDev(license, function(success)
+        if success then
+            print("Developer add succeeded")
+        else
+            print("Developer add failed")
+        end
+    end)
+
+end, false)

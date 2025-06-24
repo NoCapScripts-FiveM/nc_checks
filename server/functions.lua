@@ -3,57 +3,119 @@ local ESXCore = exports[Config.ESXCoreName]:getSharedObject()
 -- ==============================
 -- Whitelist Check
 -- ==============================
-function checkWhitelist(identifier)
+-- Check if identifier exists in 'whitelisted' collection
+function checkWhitelist(identifier, callback)
     print("Whitelist check for:", identifier)
-    local rowCount = MySQL.scalar.await('SELECT COUNT(1) FROM whitelisted WHERE steamhex = ?', { identifier })
-    return rowCount and rowCount > 0
+
+    Mongo:FindOne({
+        collection = "whitelist",
+        query = { steamhex = identifier }
+    }, function(result)
+        if result then
+            callback(true)  -- Player found in whitelist
+        else
+            callback(false) -- Player not found in whitelist
+        end
+    end)
 end
+
+function addUserToWhitelist(identifier, cb)
+    -- First, check if the user is already in the whitelist
+    Mongo:FindOne({
+        collection = "whitelist",
+        query = { steamhex = identifier }
+    }, function(existingUser)
+        if existingUser then
+            print("User already in whitelist:", identifier)
+            cb(true)  -- already whitelisted, consider it success
+        else
+            -- Not found, insert new whitelist entry
+            Mongo:InsertOne({
+                collection = "whitelist",
+                document = {
+                    steamhex = identifier,
+                    addedAt = os.date("!%Y-%m-%dT%H:%M:%SZ") -- ISO UTC timestamp
+                }
+            }, function(result)
+                if result then
+                    print("User added to whitelist:", identifier)
+                    cb(true)
+                else
+                    print("Failed to add user to whitelist:", identifier)
+                    cb(false)
+                end
+            end)
+        end
+    end)
+end
+
+
+function addUserToDev(identifier, cb)
+    -- First, check if the user is already in the whitelist
+    Mongo:FindOne({
+        collection = "developers",
+        query = { steamhex = identifier }
+    }, function(existingUser)
+        if existingUser then
+            print("User already in whitelist:", identifier)
+            cb(true)  -- already whitelisted, consider it success
+        else
+            -- Not found, insert new whitelist entry
+            Mongo:InsertOne({
+                collection = "developers",
+                document = {
+                    steamhex = identifier,
+                    addedAt = os.date("!%Y-%m-%dT%H:%M:%SZ") -- ISO UTC timestamp
+                }
+            }, function(result)
+                if result then
+                    print("User added to developer list:", identifier)
+                    cb(true)
+                else
+                    print("Failed to add user to developer list:", identifier)
+                    cb(false)
+                end
+            end)
+        end
+    end)
+end
+
+
+
 -- ==============================
 -- Username change check
 -- ==============================
 function updateUserName(identifier, newName)
-    -- Query to fetch the current name from the database
-    local selectQuery = [[
-        SELECT name FROM community_users WHERE hex_id = @hexid;
-    ]]
-    
-    local selectParams = { ["hexid"] = identifier }
-
-    -- Fetch the current name using oxmysql
-    exports.oxmysql:execute(selectQuery, selectParams, function(result)
-        if result and #result > 0 then
-            local currentName = result[1].name  -- Assuming result is a table with the first row containing the name
+    -- Find the user document with matching hex_id
+    Mongo:FindOne({
+        collection = "community_users",
+        query = { hex_id = identifier }
+    }, function(user)
+        if user then
+            local currentName = user.name or ""
             print("Current Name: " .. currentName)
 
-            -- Check if the current name is different from the new name
             if currentName ~= newName then
-                local updateQuery = [[
-                    UPDATE community_users
-                    SET name = @newname
-                    WHERE hex_id = @hexid;
-                ]]
-                
-                local updateParams = {
-                    ["hexid"] = identifier,
-                    ["newname"] = newName
-                }
-                
-                -- Execute the update query
-                exports.oxmysql:execute(updateQuery, updateParams, function(result)
-                    if not result or result.affectedRows == 0 then
-                        print("Failed to update username or no rows affected.")
-                    else
+                Mongo:UpdateOne({
+                    collection = "community_users",
+                    filter = { hex_id = identifier },
+                    update = { ["$set"] = { name = newName } }
+                }, function(updateResult)
+                    if updateResult and updateResult.modifiedCount and updateResult.modifiedCount > 0 then
                         print("User name updated successfully.")
+                    else
+                        print("Failed to update username or no document modified.")
                     end
                 end)
             else
                 print("No change in user name.")
             end
         else
-            print("Failed to retrieve current username.")
+            print("User not found in database.")
         end
     end)
 end
+
 
 
 
@@ -111,8 +173,8 @@ end
 -- [    script:nc_checks] > GetPlayerName (GetPlayerName.lua:3)
 -- [    script:nc_checks] > WhitelistControl (@nc_checks/server/functions.lua:118)
 -- [    script:nc_checks] > handler (@nc_checks/server/esx_sv.lua:121)
-function WhitelistControl(setKickReason, def)
-    local pSrc = source
+function WhitelistControl(setKickReason, def, source)
+    local pSrc = tonumber(source)
     local self = {
         source = pSrc,
         name = GetPlayerName(pSrc),
@@ -137,15 +199,21 @@ function WhitelistControl(setKickReason, def)
             CancelEvent()
             return
         end
-    
-        if not checkWhitelist(identifier) then
-            if Config.Logs then
-                exports.nc_logs:AddLog("Whitelisti kontroll", self.name, self.license, "Kasutaja pole whitelisti taotlus tehtud!", nil)
+        
+        checkWhitelist(identifier, function(isWhitelisted)
+            if not isWhitelisted then
+                if Config.Logs then
+                     exports.nc_logs:AddLog("Whitelisti kontroll", self.name, self.license, "Kasutaja pole whitelisti taotlus tehtud!", nil)
+                end
+                kickPlayer(src, 'Sinul pole whitelist tehtud! Palun tee ära meie whitelisti taotlus, et mängida. UCP:'..Config.UCPWebsite, setKickReason, deferrals)
+                CancelEvent()
+                return
             end
-            kickPlayer(src, 'Sinul pole whitelist tehtud! Palun tee ära meie whitelisti taotlus, et mängida. UCP:'..Config.UCPWebsite, setKickReason, deferrals)
-            CancelEvent()
-            return
-        end
+
+            -- If whitelisted, you can continue further steps or complete deferral
+            deferrals.done()  -- Allow player to join
+        end)
+       
     
 
     end
@@ -167,14 +235,19 @@ function WhitelistControl(setKickReason, def)
             return
         end
     
-        if not checkWhitelist(identifier) then
-            if Config.Logs then
-                exports.nc_logs:AddLog("Whitelist Check", self.name, self.license, "User hasnt completed his whitelist test!", nil)
+        checkWhitelist(identifier, function(isWhitelisted)
+            if not isWhitelisted then
+                if Config.Logs then
+                    exports.nc_logs:AddLog("Whitelist Check", self.name, self.license, "User hasn't completed his whitelist test!", nil)
+                end
+                kickPlayer(pSrc, 'You don\'t have whitelisted access! Complete it at: ' .. Config.UCPWebsite, setKickReason, deferrals)
+                CancelEvent()
+                return
             end
-            kickPlayer(src, 'You dont have whitelisted access! Complete it in:'..Config.UCPWebsite, setKickReason, deferrals)
-            CancelEvent()
-            return
-        end
+
+            -- If whitelisted, you can continue further steps or complete deferral
+            deferrals.done()  -- Allow player to join
+        end)
 
     end
    
@@ -248,9 +321,9 @@ exports('WhitelistControl', function(name, setKickReason, def)
 
 end)
 
-function NameCheck(setKickReason, def)
-    print("NameCheck")
-    local src = source
+function NameCheck(setKickReason, def, source)
+    print("NameCheck", tonumber(source))
+    local src = tonumber(source)
     local self = {
         source = src,
         name = GetPlayerName(src),
@@ -466,8 +539,8 @@ function DiscordCheck(name, setKickReason, def)
 
 end
 
-function IdentifierCheck(name, setKickReason, deferrals)
-    local src = source
+function IdentifierCheck(name, setKickReason, def, source)
+    local src = tonumber(source)
     local self = {
         source = src,
         name = GetPlayerName(src),
@@ -530,8 +603,8 @@ function IdentifierCheck(name, setKickReason, deferrals)
 end
 
 
-function BanCheck(name, setKickReason, def)
-    local src = source
+function BanCheck(name, setKickReason, def, source)
+    local src = tonumber(source)
     self = {
         source = src,
         name = GetPlayerName(src),
@@ -629,5 +702,38 @@ function UserCheck(def, pSrc)
         updateUserName(self.hexid, self.name)
     end
 
+end
+
+
+
+
+function IsDeveloper(def, identifier, cb)
+
+    def.defer()
+    -- Check if the user is in the developers collection
+
+     for i = 1, 2 do
+        if i == 1 then
+            def.update('Mongo check: ' .. i .. '/2.')
+        end
+
+        if i == 2 then
+            def.update('Arendaja oleku kontroll: ' .. i .. '/2.')
+
+        end
+         Citizen.Wait(1000)
+     end
+    Mongo:FindOne({
+        collection = "developers",
+        query = { steamhex = identifier }
+    }, function(developer)
+        if developer then
+            print("User is a developer:", identifier)
+            cb(true)
+        else
+            print("User is NOT a developer:", identifier)
+            cb(false)
+        end
+    end)
 end
 

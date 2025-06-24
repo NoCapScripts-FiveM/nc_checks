@@ -18,6 +18,7 @@ Config.Fivem = true
 Config.UserCheck = true --[User account creation and data check]
 Config.SavePlayersHours = true --[User playhours ] IDK why is this here
 Config.Whitelist = true --[User whitelist check ]
+Config.Development = true --[Development mode, disables all checks and allows all players to join]
 Config.NameCheck = true --[User name check ]
 Config.Discord = false --[User discord check ]
 Config.Identifier = true --[User license check ]

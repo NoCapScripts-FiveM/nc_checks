@@ -149,6 +149,14 @@ CreateThread(function()
                         return
                     end
                 end
+
+                if Config.IdentifierType == "both" then
+                    if not (self.hexid and self.hexid:sub(1, 6) == "steam:") or not (self.license and self.license:sub(1, 8) == "license:") then
+                        QBCore.Functions.Kick(src, '❌ Sinul peab olema steami ja Rockstari kasutaja.', setKickReason, deferrals)
+                        CancelEvent()
+                        return
+                    end
+                end
             end
 
             Wait(1000)
