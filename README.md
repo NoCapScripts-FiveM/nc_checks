@@ -6,7 +6,7 @@ Is an customizeable player FiveM data checker resource for Fivem that controls j
 # Deps 
 
 * nc_logs *optional*
-* mongodb <a href="https://github.com/NoCapScripts-FiveM/mongodb">
+* [MongoDB](https://github.com/NoCapScripts-FiveM/mongodb)
 
 
 # Works with 
