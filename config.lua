@@ -1,8 +1,12 @@
 Config = Config or {}
 
+Config.UseMongoDB = true -- Default: false [Uses MongoDB for database storage, requires dependency resource]
+
+
+
 Config.Lang = "EE" -- Default: EN [Language option]
 
-Config.Logs = true -- Default: false [Enables logs feature with depedency resource]
+Config.Logs = true -- Default: false [Enables logs feature with depedency resource]   
 
 -- Core Settings
 Config.IdentifierType = 'steam' --[Select identifier type]
@@ -26,6 +30,8 @@ Config.Ban = true --[User ban check ]
 
 
 -- Whitelist strings
+
+
 
 
 Config.UCPWebsite = "ucp.com" -- Your FivemServer UCP

@@ -1,120 +1,6 @@
 local Locale = Config.Lang
 local ESXCore = exports[Config.ESXCoreName]:getSharedObject()
--- ==============================
--- Whitelist Check
--- ==============================
--- Check if identifier exists in 'whitelisted' collection
-function checkWhitelist(identifier, callback)
-    print("Whitelist check for:", identifier)
 
-    Mongo:FindOne({
-        collection = "whitelist",
-        query = { steamhex = identifier }
-    }, function(result)
-        if result then
-            callback(true)  -- Player found in whitelist
-        else
-            callback(false) -- Player not found in whitelist
-        end
-    end)
-end
-
-function addUserToWhitelist(identifier, cb)
-    -- First, check if the user is already in the whitelist
-    Mongo:FindOne({
-        collection = "whitelist",
-        query = { steamhex = identifier }
-    }, function(existingUser)
-        if existingUser then
-            print("User already in whitelist:", identifier)
-            cb(true)  -- already whitelisted, consider it success
-        else
-            -- Not found, insert new whitelist entry
-            Mongo:InsertOne({
-                collection = "whitelist",
-                document = {
-                    steamhex = identifier,
-                    addedAt = os.date("!%Y-%m-%dT%H:%M:%SZ") -- ISO UTC timestamp
-                }
-            }, function(result)
-                if result then
-                    print("User added to whitelist:", identifier)
-                    cb(true)
-                else
-                    print("Failed to add user to whitelist:", identifier)
-                    cb(false)
-                end
-            end)
-        end
-    end)
-end
-
-
-function addUserToDev(identifier, cb)
-    -- First, check if the user is already in the whitelist
-    Mongo:FindOne({
-        collection = "developers",
-        query = { steamhex = identifier }
-    }, function(existingUser)
-        if existingUser then
-            print("User already in whitelist:", identifier)
-            cb(true)  -- already whitelisted, consider it success
-        else
-            -- Not found, insert new whitelist entry
-            Mongo:InsertOne({
-                collection = "developers",
-                document = {
-                    steamhex = identifier,
-                    addedAt = os.date("!%Y-%m-%dT%H:%M:%SZ") -- ISO UTC timestamp
-                }
-            }, function(result)
-                if result then
-                    print("User added to developer list:", identifier)
-                    cb(true)
-                else
-                    print("Failed to add user to developer list:", identifier)
-                    cb(false)
-                end
-            end)
-        end
-    end)
-end
-
-
-
--- ==============================
--- Username change check
--- ==============================
-function updateUserName(identifier, newName)
-    -- Find the user document with matching hex_id
-    Mongo:FindOne({
-        collection = "community_users",
-        query = { hex_id = identifier }
-    }, function(user)
-        if user then
-            local currentName = user.name or ""
-            print("Current Name: " .. currentName)
-
-            if currentName ~= newName then
-                Mongo:UpdateOne({
-                    collection = "community_users",
-                    filter = { hex_id = identifier },
-                    update = { ["$set"] = { name = newName } }
-                }, function(updateResult)
-                    if updateResult and updateResult.modifiedCount and updateResult.modifiedCount > 0 then
-                        print("User name updated successfully.")
-                    else
-                        print("Failed to update username or no document modified.")
-                    end
-                end)
-            else
-                print("No change in user name.")
-            end
-        else
-            print("User not found in database.")
-        end
-    end)
-end
 
 
 
@@ -707,33 +593,216 @@ end
 
 
 
-function IsDeveloper(def, identifier, cb)
 
-    def.defer()
-    -- Check if the user is in the developers collection
 
-     for i = 1, 2 do
-        if i == 1 then
-            def.update('Mongo check: ' .. i .. '/2.')
+
+if Config.UseMongoDB then
+    
+    -- ==============================
+    -- Developer Check
+    -- ==============================
+    function IsDeveloper(def, identifier, cb)
+
+        def.defer()
+        -- Check if the user is in the developers collection
+
+        for i = 1, 2 do
+            if i == 1 then
+                def.update('Mongo check: ' .. i .. '/2.')
+            end
+
+            if i == 2 then
+                def.update('Arendaja oleku kontroll: ' .. i .. '/2.')
+
+            end
+            Citizen.Wait(1000)
         end
+        Mongo:FindOne({
+            collection = "developers",
+            query = { steamhex = identifier }
+        }, function(developer)
+            if developer then
+                print("User is a developer:", identifier)
+                cb(true)
+            else
+                print("User is NOT a developer:", identifier)
+                cb(false)
+            end
+        end)
+    end
 
-        if i == 2 then
-            def.update('Arendaja oleku kontroll: ' .. i .. '/2.')
+    -- ==============================
+    -- Whitelist Check
+    -- ==============================
+    -- Check if identifier exists in 'whitelisted' collection
 
-        end
-         Citizen.Wait(1000)
-     end
-    Mongo:FindOne({
-        collection = "developers",
-        query = { steamhex = identifier }
-    }, function(developer)
-        if developer then
-            print("User is a developer:", identifier)
-            cb(true)
-        else
-            print("User is NOT a developer:", identifier)
-            cb(false)
-        end
-    end)
+    function checkWhitelist(identifier, callback)
+        print("Whitelist check for:", identifier)
+
+        Mongo:FindOne({
+            collection = "whitelist",
+            query = { steamhex = identifier }
+        }, function(result)
+            if result then
+                callback(true)  -- Player found in whitelist
+            else
+                callback(false) -- Player not found in whitelist
+            end
+        end)
+    end
+
+    function addUserToWhitelist(identifier, cb)
+        -- First, check if the user is already in the whitelist
+        Mongo:FindOne({
+            collection = "whitelist",
+            query = { steamhex = identifier }
+        }, function(existingUser)
+            if existingUser then
+                print("User already in whitelist:", identifier)
+                cb(true)  -- already whitelisted, consider it success
+            else
+                -- Not found, insert new whitelist entry
+                Mongo:InsertOne({
+                    collection = "whitelist",
+                    document = {
+                        steamhex = identifier,
+                        addedAt = os.date("!%Y-%m-%dT%H:%M:%SZ") -- ISO UTC timestamp
+                    }
+                }, function(result)
+                    if result then
+                        print("User added to whitelist:", identifier)
+                        cb(true)
+                    else
+                        print("Failed to add user to whitelist:", identifier)
+                        cb(false)
+                    end
+                end)
+            end
+        end)
+    end
+
+
+    function addUserToDev(identifier, cb)
+        -- First, check if the user is already in the whitelist
+        Mongo:FindOne({
+            collection = "developers",
+            query = { steamhex = identifier }
+        }, function(existingUser)
+            if existingUser then
+                print("User already in whitelist:", identifier)
+                cb(true)  -- already whitelisted, consider it success
+            else
+                -- Not found, insert new whitelist entry
+                Mongo:InsertOne({
+                    collection = "developers",
+                    document = {
+                        steamhex = identifier,
+                        addedAt = os.date("!%Y-%m-%dT%H:%M:%SZ") -- ISO UTC timestamp
+                    }
+                }, function(result)
+                    if result then
+                        print("User added to developer list:", identifier)
+                        cb(true)
+                    else
+                        print("Failed to add user to developer list:", identifier)
+                        cb(false)
+                    end
+                end)
+            end
+        end)
+    end
+
+
+
+    -- ==============================
+    -- Username change check
+    -- ==============================
+    function updateUserName(identifier, newName)
+        -- Find the user document with matching hex_id
+        Mongo:FindOne({
+            collection = "community_users",
+            query = { hex_id = identifier }
+        }, function(user)
+            if user then
+                local currentName = user.name or ""
+                print("Current Name: " .. currentName)
+
+                if currentName ~= newName then
+                    Mongo:UpdateOne({
+                        collection = "community_users",
+                        filter = { hex_id = identifier },
+                        update = { ["$set"] = { name = newName } }
+                    }, function(updateResult)
+                        if updateResult and updateResult.modifiedCount and updateResult.modifiedCount > 0 then
+                            print("User name updated successfully.")
+                        else
+                            print("Failed to update username or no document modified.")
+                        end
+                    end)
+                else
+                    print("No change in user name.")
+                end
+            else
+                print("User not found in database.")
+            end
+        end)
+    end
+
+else
+
+    function checkWhitelist(identifier)
+        print("Whitelist check for:", identifier)
+        local rowCount = MySQL.scalar.await('SELECT COUNT(1) FROM whitelisted WHERE steamhex = ?', { identifier })
+        return rowCount and rowCount > 0
+    end
+
+    function updateUserName(identifier, newName)
+        -- Query to fetch the current name from the database
+        local selectQuery = [[
+            SELECT name FROM community_users WHERE hex_id = @hexid;
+        ]]
+        
+        local selectParams = { ["hexid"] = identifier }
+
+        -- Fetch the current name using oxmysql
+        exports.oxmysql:execute(selectQuery, selectParams, function(result)
+            if result and #result > 0 then
+                local currentName = result[1].name  -- Assuming result is a table with the first row containing the name
+                print("Current Name: " .. currentName)
+
+                -- Check if the current name is different from the new name
+                if currentName ~= newName then
+                    local updateQuery = [[
+                        UPDATE community_users
+                        SET name = @newname
+                        WHERE hex_id = @hexid;
+                    ]]
+                    
+                    local updateParams = {
+                        ["hexid"] = identifier,
+                        ["newname"] = newName
+                    }
+                    
+                    -- Execute the update query
+                    exports.oxmysql:execute(updateQuery, updateParams, function(result)
+                        if not result or result.affectedRows == 0 then
+                            print("Failed to update username or no rows affected.")
+                        else
+                            print("User name updated successfully.")
+                        end
+                    end)
+                else
+                    print("No change in user name.")
+                end
+            else
+                print("Failed to retrieve current username.")
+            end
+        end)
+    end
+
+
+
+    print("MySQL Database is not enabled. Skipping MySQL functions.")
+
 end
 
